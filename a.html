@@ -1,0 +1,430 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Book Dragon</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+    body {
+      background-color: #fff;
+      color: #000;
+      font-size: 16px;
+    }
+    header {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    .section {
+      margin-bottom: 2rem;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border: none;
+      border-radius: 8px;
+      background-color: #000;
+      color: #fff;
+      cursor: pointer;
+      text-align: center;
+    }
+    .btn:hover {
+      background-color: #333;
+    }
+    .social-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      background-color: #f5f5f5;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      cursor: pointer;
+    }
+    .social-btn:hover {
+      background-color: #e0e0e0;
+    }
+    .social-btn .icon {
+      height: 20px;
+      width: 20px;
+    }
+    .terms {
+      font-size: 0.75rem;
+      text-align: center;
+      margin-top: 1rem;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .chip {
+      padding: 0.5rem 1rem;
+      background-color: #eee;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .chip:hover {
+      background-color: #ddd;
+    }
+    .chip.active {
+      background-color: #000;
+      color: #fff;
+    }
+    .graph {
+      margin: 1rem 0;
+      width: 100%;
+      height: 300px;
+    }
+    .genres {
+      margin: 1rem 0;
+    }
+    .genres h3 {
+      margin-bottom: 0.5rem;
+    }
+    .genres ul {
+      list-style: none;
+      padding-left: 1rem;
+    }
+    .genres ul li::before {
+      content: '→';
+      margin-right: 0.5rem;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>BOOK DRAGON</header>
+  <div class="container">
+
+  
+    <div id="page1" class="section">
+      <h3>Create a profile:</h3>
+      <input type="text" placeholder="Username">
+      <button class="btn" onclick="goToDashboard()">Continue</button>
+
+      <p style="text-align:center; margin: 1rem 0;">or</p>
+
+      <h3>Create an account</h3>
+      <input type="email" placeholder="Email">
+      <input type="password" placeholder="Password">
+      <button class="btn" onclick="goToDashboard()">Continue</button>
+
+      <button class="social-btn">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" class="icon">
+        Continue with Google
+      </button>
+      <button class="social-btn">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple" class="icon">
+        Continue with Apple
+      </button>
+
+      <p class="terms">
+        By clicking continue, you agree to our
+        <a href="#">Terms of Service</a> and
+        <a href="#">Privacy Policy</a>
+      </p>
+    </div>
+
+    
+    <div id="page2" class="section hidden">
+      <nav>
+        <div class="chip active" onclick="showSearch()">Search</div>
+        <div class="chip" onclick="showHistory()">History</div>
+      </nav>
+
+      
+    <div id="searchView">
+      <textarea id="synopsisInput" placeholder="Enter synopsis here..." class="w-full p-3 border border-gray-300 rounded mb-4"></textarea>
+      <button class="w-full bg-black text-white py-3 rounded hover:bg-gray-800 mb-3" onclick="fetchPrediction()">Analyze</button>
+      <div class="w-full h-64 mb-4">
+        <canvas id="genreChart"></canvas>
+      </div>
+      <div class="mb-4">
+        <h3 class="font-semibold mb-2">Major genres detected:</h3>
+        <ul id="major-genres" class="list-disc list-inside"></ul>
+      </div>
+      <div class="mb-4">
+        <h3 class="font-semibold mb-2">Sub-genres:</h3>
+        <ul id="sub-genres" class="list-disc list-inside"></ul>
+      </div>
+    </div>
+
+
+      <div id="historyView" class="hidden">
+        <h3>Previous Searches:</h3>
+        <ul id="historyList"></ul>
+        <div id="historyDetails" class="genres"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let genreChart;
+    const history = [];
+
+    function goToDashboard() {
+      document.getElementById('page1').classList.add('hidden');
+      document.getElementById('page2').classList.remove('hidden');
+    }
+
+    function showSearch() {
+      document.querySelector('.chip:nth-child(1)').classList.add('active');
+      document.querySelector('.chip:nth-child(2)').classList.remove('active');
+      document.getElementById('searchView').classList.remove('hidden');
+      document.getElementById('historyView').classList.add('hidden');
+    }
+
+    function showHistory() {
+      document.querySelector('.chip:nth-child(2)').classList.add('active');
+      document.querySelector('.chip:nth-child(1)').classList.remove('active');
+      document.getElementById('searchView').classList.add('hidden');
+      document.getElementById('historyView').classList.remove('hidden');
+
+      const list = document.getElementById("historyList");
+      list.innerHTML = "";
+      if (history.length === 0) {
+        list.innerHTML = "<li><em>No previous searches yet.</em></li>";
+        return;
+      }
+
+      history.forEach((item, i) => {
+        const li = document.createElement("li");
+        li.textContent = item.synopsis.slice(0, 40) + "...";
+        li.style.cursor = "pointer";
+        li.onclick = () => showHistoryDetails(item);
+        list.appendChild(li);
+      });
+    }
+
+    function showHistoryDetails(entry) {
+      const details = document.getElementById("historyDetails");
+      details.innerHTML = `
+        <h4>Full Synopsis:</h4>
+        <p>${entry.synopsis}</p>
+        <h4>Genres:</h4>
+        <ul>${Object.entries(entry.genres).map(([g, v]) => `<li>${g}: ${v}%</li>`).join('')}</ul>
+        <h4>Subgenres:</h4>
+        <ul>${Object.entries(entry.subgenres || {}).flatMap(([g, arr]) => arr.map(sub => `<li>${g} → ${sub}</li>`)).join('')}</ul>
+      `;
+    }
+
+    function fetchPrediction() {
+      const synopsis = document.getElementById("synopsisInput").value.trim();
+      if (!synopsis) return;
+
+      fetch("/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ synopsis })
+      })
+      .then(res => res.json())
+      .then(data => {
+        history.push({ synopsis, ...data });
+
+        const majorList = document.getElementById("major-genres");
+        majorList.innerHTML = Object.entries(data.genres)
+          .map(([genre, percent]) => `<li>${genre} (${percent}%)</li>`)
+          .join("");
+
+        const subList = document.getElementById("sub-genres");
+        subList.innerHTML = Object.entries(data.subgenres || {})
+          .flatMap(([genre, subs]) => subs.map(sub => `<li>${genre} → ${sub}</li>`))
+          .join("");
+
+        const ctx = document.getElementById("genreChart").getContext("2d");
+        if (genreChart) genreChart.destroy();
+        genreChart = new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: Object.keys(data.genres),
+            datasets: [{
+              data: Object.values(data.genres),
+              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#8BC34A', '#FF9800', '#9C27B0']
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: function(ctx) {
+                    return `${ctx.label}: ${ctx.parsed}%`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      })
+      .catch(err => console.error("Prediction error:", err));
+    }
+
+    document.getElementById("synopsisInput").addEventListener("blur", fetchPrediction);
+  </script>
+</body>
+</html> -->
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Dragon</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-white text-gray-900 font-sans">
+  <header class="text-center py-10 text-3xl font-bold">BOOK DRAGON</header>
+
+  <div class="max-w-md mx-auto p-4">
+    <!-- Login Page -->
+    <div id="page1">
+      <h3 class="text-xl font-semibold mb-2">Create a profile:</h3>
+      <input type="text" placeholder="Username" class="w-full p-3 mb-3 rounded border border-gray-300" />
+      <button class="w-full bg-black text-white py-3 rounded hover:bg-gray-800 mb-6" onclick="goToDashboard()">Continue</button>
+
+      <p class="text-center mb-4">or</p>
+
+      <h3 class="text-xl font-semibold mb-2">Create an account</h3>
+      <input type="email" placeholder="Email" class="w-full p-3 mb-3 rounded border border-gray-300" />
+      <input type="password" placeholder="Password" class="w-full p-3 mb-3 rounded border border-gray-300" />
+      <button class="w-full bg-black text-white py-3 rounded hover:bg-gray-800 mb-3" onclick="goToDashboard()">Continue</button>
+
+      <button class="w-full flex items-center justify-center gap-3 bg-gray-100 text-black py-3 rounded hover:bg-gray-200 mb-2">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjzC2JyZDZ_RaWf0qp11K0lcvB6b6kYNMoqtZAQ9hiPZ4cTIOB" class="h-5 w-5" />
+        Continue with Google
+      </button>
+      <button class="w-full flex items-center justify-center gap-3 bg-gray-100 text-black py-3 rounded hover:bg-gray-200">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" class="h-5 w-5" />
+        Continue with Apple
+      </button>
+
+      <p class="text-xs text-center mt-4">
+        By clicking continue, you agree to our <a href="#" class="underline">Terms of Service</a> and <a href="#" class="underline">Privacy Policy</a>
+      </p>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="page2" class="hidden">
+      <div class="flex justify-center gap-4 my-4">
+        <div class="chip active bg-black text-white px-4 py-2 rounded-full cursor-pointer" onclick="showSearch()">Search</div>
+        <div class="chip bg-gray-200 text-black px-4 py-2 rounded-full cursor-pointer" onclick="showHistory()">History</div>
+      </div>
+
+      <!-- Search View -->
+      <div id="searchView">
+        <textarea id="synopsisInput" placeholder="Enter synopsis here..." class="w-full p-3 border border-gray-300 rounded mb-4"></textarea>
+        <button class="w-full bg-black text-white py-3 rounded hover:bg-gray-800 mb-3" onclick="fetchPrediction()">Analyze</button>
+        <div class="w-full h-64 mb-4">
+          <canvas id="genreChart"></canvas>
+        </div>
+        <div class="mb-4">
+          <h3 class="font-semibold mb-2">Major genres detected:</h3>
+          <ul id="major-genres" class="list-disc list-inside"></ul>
+        </div>
+      </div>
+
+      <!-- History View -->
+      <div id="historyView" class="hidden">
+        <h3 class="font-semibold mb-2">Previous Searches:</h3>
+        <ul id="historyList" class="mb-4"></ul>
+        <div id="historyDetails"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let genreChart;
+    const history = [];
+
+    function goToDashboard() {
+      document.getElementById('page1').classList.add('hidden');
+      document.getElementById('page2').classList.remove('hidden');
+    }
+
+    function showSearch() {
+      document.querySelectorAll('.chip')[0].classList.add('bg-black', 'text-white');
+      document.querySelectorAll('.chip')[1].classList.remove('bg-black', 'text-white');
+      document.getElementById('searchView').classList.remove('hidden');
+      document.getElementById('historyView').classList.add('hidden');
+    }
+
+    function showHistory() {
+      document.querySelectorAll('.chip')[1].classList.add('bg-black', 'text-white');
+      document.querySelectorAll('.chip')[0].classList.remove('bg-black', 'text-white');
+      document.getElementById('searchView').classList.add('hidden');
+      document.getElementById('historyView').classList.remove('hidden');
+
+      const list = document.getElementById("historyList");
+      list.innerHTML = history.length ? history.map(item => `<li class="cursor-pointer hover:underline" onclick="showHistoryDetails('${item.synopsis}', ${JSON.stringify(item.genres)})">${item.synopsis.slice(0,40)}...</li>`).join('') : "<li class='text-gray-500'><em>No previous searches yet.</em></li>";
+    }
+
+    function showHistoryDetails(synopsis, genres) {
+      document.getElementById("historyDetails").innerHTML = `
+        <h4 class="font-semibold">Full Synopsis:</h4>
+        <p class="mb-2">${synopsis}</p>
+        <h4 class="font-semibold">Genres:</h4>
+        <ul class="list-disc list-inside">${Object.entries(genres).map(([g, v]) => `<li>${g}: ${v}%</li>`).join('')}</ul>
+      `;
+    }
+
+    function fetchPrediction() {
+      const synopsis = document.getElementById("synopsisInput").value.trim();
+      if (!synopsis) return;
+
+      fetch("/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ synopsis })
+      })
+      .then(res => res.json())
+      .then(data => {
+        history.push({ synopsis, genres: data.genres });
+
+        document.getElementById("major-genres").innerHTML = Object.entries(data.genres).map(([genre, percent]) => `<li>${genre} (${percent}%)</li>`).join("");
+
+        const ctx = document.getElementById("genreChart").getContext("2d");
+        if (genreChart) genreChart.destroy();
+        genreChart = new Chart(ctx, {type: 'pie', data: {labels: Object.keys(data.genres), datasets: [{data: Object.values(data.genres), backgroundColor:['#f87171','#60a5fa','#fbbf24','#34d399','#f97316','#a78bfa']}]} });
+      });
+    }
+  </script>
+</body>
+</html>
