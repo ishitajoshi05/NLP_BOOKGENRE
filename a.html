@@ -365,10 +365,9 @@
       <div id="historyView" class="hidden">
         <h3 class="font-semibold mb-2">Previous Searches:</h3>
         <ul id="historyList" class="mb-4"></ul>
-        <div id="historyDetails"></div>
+        <div id="historyDetails" class="p-3 border rounded bg-gray-50"></div>
       </div>
-    </div>
-  </div>
+
 
   <script>
     let genreChart;
@@ -391,19 +390,36 @@
       document.querySelectorAll('.chip')[0].classList.remove('bg-black', 'text-white');
       document.getElementById('searchView').classList.add('hidden');
       document.getElementById('historyView').classList.remove('hidden');
-
+      
       const list = document.getElementById("historyList");
-      list.innerHTML = history.length ? history.map(item => `<li class="cursor-pointer hover:underline" onclick="showHistoryDetails('${item.synopsis}', ${JSON.stringify(item.genres)})">${item.synopsis.slice(0,40)}...</li>`).join('') : "<li class='text-gray-500'><em>No previous searches yet.</em></li>";
-    }
+      list.innerHTML = "";
+      if (history.length === 0) {
+        list.innerHTML = "<li class='text-gray-500'><em>No previous searches yet.</em></li>";
+        return;
+      }
 
-    function showHistoryDetails(synopsis, genres) {
-      document.getElementById("historyDetails").innerHTML = `
-        <h4 class="font-semibold">Full Synopsis:</h4>
-        <p class="mb-2">${synopsis}</p>
-        <h4 class="font-semibold">Genres:</h4>
-        <ul class="list-disc list-inside">${Object.entries(genres).map(([g, v]) => `<li>${g}: ${v}%</li>`).join('')}</ul>
-      `;
-    }
+  history.forEach((item, i) => {
+    const li = document.createElement("li");
+    li.textContent = item.synopsis.slice(0, 40) + "...";
+    li.className = "cursor-pointer hover:underline";
+    li.onclick = () => showHistoryDetails(item);  // Pass entire entry object
+    list.appendChild(li);
+  });
+}
+
+
+    function showHistoryDetails(entry) {
+      const details = document.getElementById("historyDetails");
+      details.innerHTML = `
+      <h4 class="font-semibold mb-2">Full Synopsis:</h4>
+      <p class="mb-4">${entry.synopsis}</p>
+      <h4 class="font-semibold mb-2">Genres:</h4>
+      <ul class="list-disc list-inside mb-4">
+      ${Object.entries(entry.genres).map(([g, v]) => `<li>${g}: ${v}%</li>`).join('')}
+      </ul>
+  `;
+}
+
 
     function fetchPrediction() {
       const synopsis = document.getElementById("synopsisInput").value.trim();
